@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                           http://www.springframework.org/schema/security
+                           http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	<security:debug/>
+	
+	<security:http use-expressions="true" authentication-manager-ref="authenticationManager">
+		<security:intercept-url pattern="/login" access="permitAll"/>
+		<security:intercept-url pattern="/**" access="hasAnyRole('ROLE_USER')" />
+		<security:http-basic/>
+	</security:http>
+
+	<security:authentication-manager id="authenticationManager" alias="authenticationManager">
+		<security:authentication-provider user-service-ref="userService">
+		</security:authentication-provider>
+	</security:authentication-manager>
+	
+    <bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased"
+          xmlns="http://www.springframework.org/schema/beans">
+        <constructor-arg>
+            <list>
+                <bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+                <bean class="org.springframework.security.access.vote.RoleVoter"/>
+            </list>
+        </constructor-arg>
+    </bean>
+	
+	<security:user-service id="userService">
+		<security:user name="test.user" password="pass" authorities="ROLE_USER"/>
+	</security:user-service>
+		
+</beans>

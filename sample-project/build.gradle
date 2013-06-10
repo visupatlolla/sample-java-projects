@@ -1,0 +1,80 @@
+apply plugin: 'war'
+apply plugin: 'eclipse'
+
+repositories {
+	mavenCentral()
+	mavenRepo url: "http://ihealthbuild.agilexhealth.com/artifactory/agilex/"
+}
+
+configurations { intTest.extendsFrom testRuntime }
+
+dependencies {
+
+	compile "org.springframework:spring-context:3.1.1.RELEASE"
+	compile "org.springframework:spring-tx:3.1.1.RELEASE"
+	compile "org.springframework:spring-web:3.1.1.RELEASE"
+	compile "org.springframework:spring-webmvc:3.1.1.RELEASE"
+	compile "org.springframework:spring-orm:3.1.1.RELEASE"
+
+	compile "commons-logging:commons-logging:1.1.1"
+	compile "log4j:log4j:1.2.16"
+
+	compile "com.sun.jersey:jersey-core:1.12"
+	compile "com.sun.jersey:jersey-server:1.12"
+	compile "com.sun.jersey:jersey-json:1.12"
+	compile "com.sun.jersey:jersey-client:1.12"
+	compile "com.sun.jersey:jersey-servlet:1.12"
+	compile "com.sun.jersey.contribs:jersey-spring:1.12"
+	compile "commons-httpclient:commons-httpclient:3.1"
+
+	compile "org.springframework.security:spring-security-core:3.1.0.RELEASE"
+	compile "org.springframework.security:spring-security-config:3.1.0.RELEASE"
+	compile "org.springframework.security:spring-security-web:3.1.0.RELEASE"
+	compile "org.springframework.security:spring-security-ldap:3.1.0.RELEASE"
+
+	compile "org.hibernate:hibernate-core:3.5.6-Final"
+	compile "org.hibernate:hibernate-annotations:3.5.6-Final"
+	compile "org.hibernate:hibernate-entitymanager:3.5.6-Final"
+
+	runtime "org.apache.cocoon:cocoon-spring-configurator:2.1.0"
+	runtime "org.apache.cocoon:cocoon-configuration-api:1.0.2"
+
+	runtime 'com.oracle:ojdbc6:11.2'
+	runtime 'org.liquibase:liquibase-core:2.0.3'
+
+	runtime "org.slf4j:slf4j-api:1.5.10"
+	runtime "org.slf4j:jcl-over-slf4j:1.5.10"
+	runtime "org.slf4j:slf4j-log4j12:1.5.10"
+
+	runtime "xerces:xerces:2.4.0"
+	runtime "xerces:xercesImpl:2.9.1"
+
+	testCompile "junit:junit:4.8.2"
+}
+
+
+sourceSets {
+	main {
+		output.resourcesDir = output.classesDir // fixes hibernate annotation mapping issue in gradle
+	}
+	intTest {
+		java.srcDir file('src/inttest/java')
+		resources.srcDir file('src/inttest/resources')
+		compileClasspath = sourceSets.main.output + sourceSets.test.output + configurations.intTest
+		runtimeClasspath = compileClasspath + output
+	}
+}
+
+task intTest(type: Test, dependsOn: jar) {
+	systemProperties = System.properties
+	testClassesDir = sourceSets.intTest.output.classesDir
+	classpath = sourceSets.intTest.runtimeClasspath
+	systemProperties['jar.path'] = jar.archivePath
+	systemProperties['org.apache.cocoon.mode'] = 'dev'
+}
+
+
+task wrapper(type: Wrapper){ gradleVersion = '1.6' }
+
+
+
